@@ -1,0 +1,58 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/microservice
+    username: microservice
+    # Using environment variable ENCRYPT_KEY=ENCRYPT_KEY
+    # Getting the value with POST localhost:8888/encrypt and the password in its body
+    # Raw password: microservice
+    password: "{cipher}f0c0759246b4a96350c570136adbe3ac9ff4e89c5a0bc37a553a4d7b4ded1b62"
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL10Dialect
+        jdbc:
+          lob:
+            # With Java >= 9, to avoid:
+            # SQLFeatureNotSupportedException: Method PgConnection.createClob() is not yet implemented
+            non_contextual_creation: true
+
+# Required to expose the routes included actuator: actuator/routes
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+
+# Service registration and discovery
+eureka:
+  client:
+    # Pull down a local copy of the registry
+    fetchRegistry: true
+    healthcheck:
+      enabled: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    # Indicates the duration the server waits since it received the last heartbeat before it can evict an instance
+    # from its registry. This value should be greater than leaseRenewalIntervalInSeconds
+    leaseExpirationDurationInSeconds: 75
+    # Indicates the interval of heartbeats that the client sends to the server. The default value is 30 seconds
+    # which means that the client will send one heartbeat every 30 seconds.
+    leaseRenewalIntervalInSeconds: 60
+    # Register the IP of the service rather than the server name (useful when there is no a server-based
+    # environment where a service is assigned a DNS-backed host name, usually in Docker for example)
+    preferIpAddress: true
+
+security:
+  jwt:
+    token:
+      # Raw secretKey: 72=83eH97$7f408adAC
+      secretKey: "{cipher}731d4dc85838aeb67b6eb2a5cad6f8f3057107b86791b1f376fe8195e6054eb43efa9383bff90eef8b75f766d59abbe3"
+      signatureAlgorithm: "HMACSHA512"
+
+cache:
+  oauthClient:
+    entryCapacity: 2
+    expireInMinutes: 30
+    name: oauthClientCache

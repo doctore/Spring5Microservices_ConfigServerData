@@ -1,40 +1,55 @@
-zuul:
-  # To exclude the registration of all eureka service ID based routes
-  ignored-services: '*'
-  routes:
-    order-service:
-      path: /order/**
-      # By default, the proxy prefix is stripped from the request before the request is forwarded by
-      stripPrefix: false
-    pizza-service:
-      path: /pizza/**
-      # By default, the proxy prefix is stripped from the request before the request is forwarded by
-      stripPrefix: false
-    security-jwt-service:
-      path: /security/jwt/**
-      # By default, the proxy prefix is stripped from the request before the request is forwarded by
-      stripPrefix: false
-    security-oauth-service:
-      path: /security/oauth/**
-      # By default, the proxy prefix is stripped from the request before the request is forwarded by
-      stripPrefix: false
-  # Exclude Authorization from sensitive headers
-  sensitiveHeaders: Cookie,Set-Cookie
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/order/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: order-service
+                fallbackuri: forward:/failed/order-service/redirect
+        - id: pizza-service
+          uri: lb://pizza-service
+          predicates:
+            - Path=/pizza/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: pizza-service
+                fallbackuri: forward:/failed/pizza-service/redirect
+        - id: security-jwt-service
+          uri: lb://security-jwt-service
+          predicates:
+            - Path=/security/jwt/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: security-jwt-service
+                fallbackuri: forward:/failed/security-jwt-service/redirect
+        - id: security-oauth-service
+          uri: lb://security-oauth-service
+          predicates:
+            - Path=/security/oauth/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: security-oauth-service
+                fallbackuri: forward:/failed/security-oauth-service/redirect
 
-hystrix:
-  command:
-    default:
-      execution:
-        isolation:
-          thread:
-            # Time in milliseconds after which the caller will observe a timeout and walk away from the command execution
-            timeoutInMilliseconds: 30000
-
-# Timeouts configuration for requests proxied through Zuul
-ribbon:
-  ConnectTimeout: 5000
-  ReadTimeout: 10000
-
-# List of comma separated microservices with a suitable documentation of its Rest API
-restApi:
-  documentedServices: security-jwt-service,pizza-service,order-service
+# Swagger integration library used to centralize the documentation to every microservice
+# For dev profile, the required url to access it is:
+#   http://localhost:5555/swagger-ui/
+springfox:
+  documentation:
+    swagger:
+      # Custom property to include the path of documented microservices using Swagger v3
+      v3:
+        # Api docs path properties
+        path: /v3/api-docs
+      # Custom property to include the documented microservices using Swagger
+      documentedServices: security-jwt-service,pizza-service,order-service
+      # Custom property to include the documented API version
+      apiVersion: 1.0
