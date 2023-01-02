@@ -1,16 +1,3 @@
-spring:
-  # To include trace and span identifiers in every log
-  sleuth:
-    reactor:
-      instrumentation-type: decorate_on_each
-
-# Required to expose the routes included actuator: actuator/routes
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info
-
 # Service registration and discovery
 eureka:
   client:
@@ -32,6 +19,8 @@ eureka:
     # environment where a service is assigned a DNS-backed host name, usually in Docker for example)
     preferIpAddress: true
 
+
+# Fault tolerance configuration
 hystrix:
   command:
     default:
@@ -40,3 +29,19 @@ hystrix:
           thread:
             # Time in milliseconds after which the caller will observe a timeout and walk away from the command execution
             timeoutInMilliseconds: 30000
+
+
+# Required to expose the routes included actuator: actuator/routes
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+
+
+# Spring framework configuration
+spring:
+  # To include trace and span identifiers in every log
+  sleuth:
+    reactor:
+      instrumentation-type: decorate_on_each

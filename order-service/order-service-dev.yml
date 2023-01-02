@@ -1,26 +1,3 @@
-spring:
-  datasource:
-    driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/microservice
-    username: microservice
-    # Using environment variable ENCRYPT_KEY=ENCRYPT_KEY
-    # Getting the value with POST localhost:8888/encrypt and the password in its body
-    # Raw password: microservice
-    password: "{cipher}f0c0759246b4a96350c570136adbe3ac9ff4e89c5a0bc37a553a4d7b4ded1b62"
-  jooq:
-    sql-dialect: POSTGRES
-  # To include trace and span identifiers in every log
-  sleuth:
-    reactor:
-      instrumentation-type: decorate_on_each
-
-# Required to expose the routes included actuator: actuator/routes
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info
-
 # Service registration and discovery
 eureka:
   client:
@@ -42,12 +19,28 @@ eureka:
     # environment where a service is assigned a DNS-backed host name, usually in Docker for example)
     preferIpAddress: true
 
-security:
-  restApi:
-    authenticationInformation: http://localhost:5555/security/oauth/check_token?token={token}
-    clientId: Spring5Microservices
-    # Raw password: Spring5Microservices
-    clientPassword: "{cipher}9f746b78f2d521d96cacf9fa65913048ef971dc242030ca5d8c7a56ddf90093cb58dfe71b66255df8ffe1d543680fe88"
+
+# gRPC client and server configuration
+grpc:
+  client:
+    # Time in seconds waiting for the client to become terminated, giving up if the timeout is reached.
+    # 0 means no value
+    awaitTerminationInSeconds: 30
+    # Time in seconds waiting for a response from the server after invoking any method on client side, giving up if the timeout is reached.
+    # 0 means no value
+    withDeadlineAfterInSeconds: 30
+  server:
+    host: localhost
+    port: 8070
+
+
+# Required to expose the routes included actuator: actuator/routes
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+
 
 # Configuration for external Rest requests
 rest:
@@ -55,3 +48,30 @@ rest:
     timeoutInMilliseconds: 5000
   read:
     timeoutInMilliseconds: 30000
+
+
+# Configuration used to connect to the security microservice
+security:
+  restApi:
+    authenticationInformation: http://localhost:5555/security/oauth/check_token?token={token}
+    clientId: Spring5Microservices
+    # Raw password: Spring5Microservices
+    clientPassword: "{cipher}9f746b78f2d521d96cacf9fa65913048ef971dc242030ca5d8c7a56ddf90093cb58dfe71b66255df8ffe1d543680fe88"
+
+
+# Spring framework configuration
+spring:
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/microservice
+    username: microservice
+    # Using environment variable ENCRYPT_KEY=ENCRYPT_KEY
+    # Getting the value with POST localhost:8888/encrypt and the password in its body
+    # Raw password: microservice
+    password: "{cipher}f0c0759246b4a96350c570136adbe3ac9ff4e89c5a0bc37a553a4d7b4ded1b62"
+  jooq:
+    sql-dialect: POSTGRES
+  # To include trace and span identifiers in every log
+  sleuth:
+    reactor:
+      instrumentation-type: decorate_on_each
