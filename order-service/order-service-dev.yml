@@ -42,18 +42,20 @@ management:
         include: health, info
 
 
-# Configuration for external Rest requests
-rest:
-  connect:
-    timeoutInMilliseconds: 5000
-  read:
-    timeoutInMilliseconds: 30000
+# Configuration of external Rest requests using Feign client
+feign:
+  client:
+    config:
+      securityServer:
+        connectTimeout: 5000
+        loggerLevel: basic
+        readTimeout: 30000
 
 
 # Configuration used to connect to the security microservice
 security:
   restApi:
-    authenticationInformation: http://localhost:5555/security/oauth/check_token?token={token}
+    authenticationInformation: http://localhost:5555/security/oauth
     clientId: Spring5Microservices
     # Raw password: Spring5Microservices
     clientPassword: "{cipher}9f746b78f2d521d96cacf9fa65913048ef971dc242030ca5d8c7a56ddf90093cb58dfe71b66255df8ffe1d543680fe88"
