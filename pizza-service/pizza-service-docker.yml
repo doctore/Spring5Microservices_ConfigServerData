@@ -1,0 +1,92 @@
+# Internal caches used by the microservice
+cache:
+  userBlacklist:
+    entryCapacity: 20
+    expireInSeconds: 600
+    name: userBlackListCache
+
+
+# Service registration and discovery
+eureka:
+  client:
+    # Pull down a local copy of the registry
+    fetchRegistry: true
+    healthcheck:
+      enabled: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER:http://registry-server:8761/eureka/}
+  instance:
+    # Indicates the duration the server waits since it received the last heartbeat before it can evict an instance
+    # from its registry. This value should be greater than leaseRenewalIntervalInSeconds
+    leaseExpirationDurationInSeconds: 75
+    # Indicates the interval of heartbeats that the client sends to the server. The default value is 30 seconds
+    # which means that the client will send one heartbeat every 30 seconds.
+    leaseRenewalIntervalInSeconds: 60
+    # Register the IP of the service rather than the server name (useful when there is no a server-based
+    # environment where a service is assigned a DNS-backed host name, usually in Docker for example)
+    preferIpAddress: true
+
+
+# gRPC server configuration
+grpc:
+  server:
+    port: ${GRPC_SERVER_PORT:8070}
+    # Time in seconds waiting for the server to become terminated, giving up if the timeout is reached.
+    # 0 means no value
+    awaitTerminationInSeconds: 30
+
+
+# Required to expose the routes included actuator: actuator/routes
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+
+
+# Configuration for external Rest requests
+rest:
+  connect:
+    timeoutInMilliseconds: 5000
+  read:
+    timeoutInMilliseconds: 30000
+  response:
+    timeoutInMilliseconds: 30000
+  write:
+    timeoutInMilliseconds: 30000
+
+
+# Configuration used to connect to the security microservice
+security:
+  restApi:
+    authenticationInformation: ${SECURITY_SERVER:http://gateway-server:5555/security/jwt/authinfo}
+    clientId: Spring5Microservices
+    # Raw password: Spring5Microservices
+    clientPassword: "{cipher}9f746b78f2d521d96cacf9fa65913048ef971dc242030ca5d8c7a56ddf90093cb58dfe71b66255df8ffe1d543680fe88"
+
+
+# Spring framework configuration
+spring:
+  datasource:
+    url: ${DABATASE_URL:jdbc:postgresql://host.docker.internal:5432/microservice}
+    username: microservice
+    # Using environment variable ENCRYPT_KEY=ENCRYPT_KEY
+    # Getting the value with POST localhost:8888/encrypt and the password in its body
+    # Raw password: microservice
+    password: "{cipher}f0c0759246b4a96350c570136adbe3ac9ff4e89c5a0bc37a553a4d7b4ded1b62"
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL10Dialect
+        jdbc:
+          lob:
+            # With Java >= 9, to avoid:
+            # SQLFeatureNotSupportedException: Method PgConnection.createClob() is not yet implemented
+            non_contextual_creation: true
+        # To include custom functions we want to use in HQL queries
+        metadata_builder_contributor: com.pizza.configuration.persistence.SqlFunctionsMetadataBuilderContributor
+  # To include trace and span identifiers in every log
+  sleuth:
+    reactor:
+      instrumentation-type: decorate_on_each
